@@ -31,6 +31,7 @@ print('Входит или лежит на окружности точек:', en
 circle = plt.Circle((centr_x, centr_y), radius, color='blue', fill=False)
 fig, ax = plt.subplots()
 ax.add_artist(circle)
+ax.axis("equal")
 print('Центр окружности:', centr_x, ';', centr_y)
 plt.xlim(-50, 50)
 plt.ylim(-50, 50)
