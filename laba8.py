@@ -50,6 +50,10 @@ circle = plt.Circle((centr_x, centr_y), radius, color='blue', fill=False)
 fig, ax = plt.subplots()
 ax.add_artist(circle)
 ax.axis("equal")
+<<<<<<< HEAD
+=======
+print('Центр окружности:', centr_x, ';', centr_y)
+>>>>>>> 7c63770bd6f6c367b389924a10a94180f710b669
 plt.xlim(-50, 50)
 plt.ylim(-50, 50)
 plt.scatter(x, y, s=0.5, color='red')
