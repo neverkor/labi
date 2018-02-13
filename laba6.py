@@ -1,28 +1,7 @@
 from math import tan, asin
 
-# Класс для результатов
-class Result:
-    result_g = []
-    result_f = []
-    result_y = []
-    def add_g(self, g):
-        self.result_g.append(g)
-    def add_f(self, f):
-        self.result_f.append(f)
-    def add_y(self, y):
-        self.result_y.append(y)
-    def print_result(self):
-        print('G =', *self.result_g)
-        if self.result_f == []:
-            print('F = нет результатов.')
-        else:
-            print('F =', *self.result_f)
-        if self.result_y == []:
-            print('Y = нет результатов.')
-        else:
-            print('Y =', *self.result_y)
-
-result = Result()
+# Словарь для результатов
+result = {'G':[], 'F':[], 'Y':[]}
 
 a = float(input('Введите значения А: '))
 x = float(input('Введите минимальное значение X: '))
@@ -40,15 +19,15 @@ step_value = float(input('Введите величину шага: '))
 # Функция расчета, проверки данных и выводы на экран
 def calc(a, x):
     g = 10 * (-45 * a ** 2 + 49 * a * x + 6 * x ** 2) / 15 * a ** 2 + 49 * a * x + 24 * x ** 2
-    result.add_g(g)
+    result['G'].append(g)
     try:
         f = tan(5 * a ** 2 + 34 * a * x + 45 * x ** 2)
-        result.add_f(f)
+        result['F'].append(f)
     except:
         print('Введенные данные выходят за область значения функции F.')
     try:
         y = -asin(7 * a ** 2 - a * x - 8 * x ** 2)
-        result.add_y(y)
+        result['Y'].append(y)
     except:
         print('Введенные данные выходят за область значения функции Y.')
 
@@ -63,4 +42,12 @@ while count < step:
     count += 1
 
 print('Результаты:')
-print(result.print_result())
+print('G =', *result['G'])
+if result['F'] == []:
+    print('F = нет результатов')
+else:
+    print('F =', *result['F'])
+if result['Y'] == []:
+    print('Y = нет результатов')
+else:
+    print('Y =', *result['Y'])
