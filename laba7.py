@@ -1,5 +1,4 @@
 from math import tan, asin
-import pickle
 
 # Словарь для результатов
 result = {'G':[], 'F':[], 'Y':[]}
@@ -19,17 +18,20 @@ step_value = float(input('Введите величину шага: '))
 
 # Функция расчета, проверки данных и выводы на экран
 def calc(a, x):
-    g = 10 * (-45 * a ** 2 + 49 * a * x + 6 * x ** 2) / 15 * a ** 2 + 49 * a * x + 24 * x ** 2
-    result['G'].append(g)
+    try:
+        g = 10 * (-45 * a ** 2 + 49 * a * x + 6 * x ** 2) / 15 * a ** 2 + 49 * a * x + 24 * x ** 2
+        result['G'].append(g)
+    except(ZeroDivisionError):
+        print('Знаменатель обратился в 0.')
     try:
         f = tan(5 * a ** 2 + 34 * a * x + 45 * x ** 2)
         result['F'].append(f)
-    except:
+    except(ValueError):
         print('Введенные данные выходят за область значения функции F.')
     try:
         y = -asin(7 * a ** 2 - a * x - 8 * x ** 2)
         result['Y'].append(y)
-    except:
+    except(ValueError):
         print('Введенные данные выходят за область значения функции Y.')
 
 # Цикл расчета
@@ -42,22 +44,16 @@ while count < step:
         break
     count += 1
 
-# Открытие файла, запись и чтение из файла
-with open('results.txt', 'wb') as file:
-    pickle.dump(result, file)
-file.close()
+# Запись в файл
+with open('result.txt', 'w') as file:
+    for key, value in result.items():
+        file.write('{} = {}\n' .format(key, value))
+
+# Очистка словаря
 result = {}
-# Можно проверить, очистилcя словарь или нет
-#print(result)
-with open('results.txt', 'rb') as file:
-    result = pickle.load(file)
-print('Результаты:')
-print('G =', *result['G'])
-if result['F'] == []:
-    print('F = нет результатов')
-else:
-    print('F =', *result['F'])
-if result['Y'] == []:
-    print('Y = нет результатов')
-else:
-    print('Y =', *result['Y'])
+
+# Чтение из файла
+with open('result.txt', 'r') as file:
+    for i in file.readlines():
+        key, value = i.strip().split('=')
+        print(key, '=', value)
