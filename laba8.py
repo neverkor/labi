@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import time
 
 # Расчет по формуле (x-centr_x)**2 + (y - centr_y)**2 <= radius**2
-def calc(x, y):
+def calc():
     for key in x:
         key_x = (key - centr_x)**2
         result_x.append(key_x)
@@ -23,7 +23,7 @@ def calc(x, y):
     print('Точек всего:', point)
 
 # Поиск точек по одной размерности
-def search(x, y):
+def search():
     global os_y
     global os_x
     point_x = float(input('Введите координату поиска X: '))
@@ -40,7 +40,7 @@ def search(x, y):
     print('Время выполнения поиска точек:', *times)
 
 # Графическое изображение (не обязательно, так нагляднее)
-def graphic(x, y):
+def graphic():
     global os_x
     global os_y
     circle = plt.Circle((centr_x, centr_y), radius, color='blue', fill=False)
