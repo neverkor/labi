@@ -19,20 +19,20 @@ step_value = float(input('Введите величину шага: '))
 # Функция расчета, проверки данных и выводы на экран
 def calc(a, x):
     try:
-        g = 10 * (-45 * a ** 2 + 49 * a * x + 6 * x ** 2) / 0
-        print('G =', g)
+        g = 10 * (-45 * a ** 2 + 49 * a * x + 6 * x ** 2) / 15 * a ** 2 + 49 * a * x + 24 * x ** 2
+        result['G'].append(g)
     except(ZeroDivisionError):
-        print('Знаменатель обратился в 0.')
+        pass
     try:
         f = tan(5 * a ** 2 + 34 * a * x + 45 * x ** 2)
-        print('F =', f)
+        result['F'].append(f)
     except(ValueError):
-        print('Введенные данные выходят за область значения функции F.')
+        pass
     try:
         y = -asin(7 * a ** 2 - a * x - 8 * x ** 2)
-        print('Y =', y)
+        result['Y'].append(y)
     except(ValueError):
-        print('Введенные данные выходят за область значения функции Y.')
+        pass
 
 # Цикл расчета
 count = 0
