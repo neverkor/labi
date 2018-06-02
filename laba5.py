@@ -21,19 +21,19 @@ def calc(a, x):
     if choose == 1:
         try:
             g = 10 * (-45 * a ** 2 + 49 * a * x + 6 * x ** 2) / 0
-            print('G =', g)
+            result.append(g)
         except(ZeroDivisionError):
             print('Знаменатель обратился в 0.')
     elif choose == 2:
         try:
             f = tan(5 * a ** 2 + 34 * a * x + 45 * x ** 2)
-            print('F =', f)
+            result.append(f)
         except(ValueError):
             print('Введенные данные выходят за область значения функции F.')
     elif choose == 3:
         try:
             y = -asin(7 * a ** 2 - a * x - 8 * x ** 2)
-            print('Y =', y)
+            result.append(y)
         except(ValueError):
             print('Введенные данные выходят за область значения функции Y.')
     else:
