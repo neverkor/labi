@@ -351,8 +351,6 @@ if __name__ == '__main__':
     try:
         check_dir()
         logging.info('Проверка директорий прошла успешно.')
-    except(SystemExit):
-        pass
     except:
         logging.exception('')
         logging.error('Проверка директорий прошла неудачно. Ошибка неизвестна.')
@@ -364,8 +362,6 @@ if __name__ == '__main__':
     try:
         check_start()
         logging.info('Проверка запуска прошла успешно.')
-    except(SystemExit):
-        pass
     except:
         logging.exception('')
         logging.error('Проверка запуска прошла неудачно. Ошибка неизвестна.')
