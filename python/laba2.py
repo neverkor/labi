@@ -1,4 +1,4 @@
-from math import tan, asin
+﻿from math import tan, asin
 a = float(input('Введите А: '))
 x = float(input('Введите Х: '))
 choose = int(input('1 функция G\n2 функция F\n3 функция Y\nВыберите функцию: '))

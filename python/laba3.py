@@ -1,4 +1,4 @@
-from math import tan, asin
+﻿from math import tan, asin
 a = float(input('Введите значения А: '))
 x_min = float(input('Введите минимальное значение X: '))
 x_max = float(input('Введите максимальное значение X: '))
@@ -46,3 +46,4 @@ while count < step:
         print('Ошибка! Величина Х превысила максимальное значение.')
         break
     count += 1
+input('')

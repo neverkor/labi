@@ -1,4 +1,4 @@
-from math import tan, asin
+﻿from math import tan, asin
 a = float(input('Введите А: '))
 x = float(input('Введите Х: '))
 g = 10 * (-45 * a**2 + 49 * a * x + 6 * x**2) / 15 * a**2 + 49 * a * x +24 * x**2
