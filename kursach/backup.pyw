@@ -219,7 +219,12 @@ def thread_progressbar(a):
     progress_bar = ttk.Progressbar(root, orient='horizontal', length=500, mode='determinate')
     quit = tkinter.Button(root, width=10, text='Прервать', command=quit_bar)
     label_progressbar.place(x=10, y=10)
-    time_min.place(x=364, y=10)
+    if sys.platform == 'win32':
+        time_min.place(x=364, y=10)
+        quit.place(x=440, y=70)
+    else:
+        time_min.place(x=340, y=10)
+        quit.place(x=420, y=70)
     time_sec.place(x=488, y=10)
     progress_bar.place(x=10, y=40)
     quit.place(x=440, y=70)
@@ -302,10 +307,13 @@ src = tmp_src[1:-1]
 if src == '':
     root = tkinter.Tk()
     root.withdraw()
-    if messagebox.askyesno('Ошибка!', 'Пустой путь до файла. Зайти в settings.py и настроить бекап?'):
-        import settings
+    if sys.platform == 'win32':
+        if messagebox.askyesno('Ошибка!', 'Пустой путь до файла. Зайти в settings.py и настроить бекап?'):
+            import settings
+        else:
+            logging.error('Пустой путь до файла.')
     else:
-        logging.error('Пустой путь до файла.')
+        messagebox.showinfo('Ошибка!', 'Пустой путь до файла. Зайдите в settings.pyw и настройте бекап')
     exit()
 basename = os.path.basename(src)
 sec = -1  # Переменная секунд таймера
@@ -334,15 +342,15 @@ if sys.platform == 'win32':
         # Выполнение архивации в 7zip через командную строку
     remove_file = dir_tmp + basename  # Путь до не нужного файла
 else:
-    dir_daily = os.path.realpath('./backup/daily/')
-    dir_weekly = os.path.realpath('./backup/weekly/')
-    dir_monthly = os.path.realpath('./backup/monthly/')
-    dir_yearly = os.path.realpath('./backup/yearly/')
-    dir_tmp = os.path.realpath('./backup/tmp/')
+    dir_daily = 'backup/daily/'
+    dir_weekly = 'backup/weekly/'
+    dir_monthly = 'backup/monthly/'
+    dir_yearly = 'backup/yearly/'
+    dir_tmp = 'backup/tmp/'
     dir_tmp_file = dir_tmp + now.strftime('%d.%m.%Y') + '.7z'
     dst = dir_tmp + basename
-    archive = '7z a -mx1 /backup/tmp/' + now.strftime(
-        '%d.%m.%Y') + '.7z /backup/tmp/' + basename
+    archive = '7z a -mx1 backup/tmp/' + now.strftime(
+        '%d.%m.%Y') + '.7z backup/tmp/' + basename
     remove_file = dir_tmp + basename
 progressbar = threading.Thread(target=thread_progressbar, name='progressbar', args=(1000,))
 backup = threading.Thread(target=thread_backup, name='backup', daemon=True, args=())
