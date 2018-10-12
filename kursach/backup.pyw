@@ -227,7 +227,6 @@ def thread_progressbar(a):
         quit.place(x=420, y=70)
     time_sec.place(x=488, y=10)
     progress_bar.place(x=10, y=40)
-    quit.place(x=440, y=70)
     root.eval('tk::PlaceWindow %s' % root.winfo_pathname(root.winfo_id()))
     timer_sec()
     timer_min()
@@ -291,7 +290,6 @@ def thread_backup():
         logging.exception('')
         logging.error('Чистка мусора прошла неудачно. Ошибка неизвестна.')
         sys.exit()
-    close(backup.log)
 
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
