@@ -2,12 +2,12 @@ import os, sqlite3, sys
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
-try:
-    from scipy.stats import rankdata
-except(ModuleNotFoundError):
-    messagebox.showerror('Ошибка.', 'Нет модуля Scipy, рейтинг будет работать некорректно. Установите его, написав в '
-                                    'командной строке "pip install scipy".')
-    sys.exit()
+# try:
+#     from scipy.stats import rankdata
+# except(ModuleNotFoundError):
+#     messagebox.showerror('Ошибка.', 'Нет модуля Scipy, рейтинг будет работать некорректно. Установите его, написав в '
+#                                     'командной строке "pip install scipy".')
+    # sys.exit()
 
 # Основной класс
 class Example(tk.Frame):
