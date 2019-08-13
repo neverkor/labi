@@ -1,4 +1,4 @@
-# Вставка символов из файла (в данном случае - акцизных марок) в окно стороней программы (в данном случае - 1с)
+﻿# Вставка символов из файла (в данном случае - акцизных марок) в окно стороней программы (в данном случае - 1с)
 # Перед использованием создать ттн исходящую и открыть окно подбор алкогольной продукции
 # Далее скрипт вставит все акцизки из указанного файла в ттн
 # Пример использования в командной строке: python insert_akciz.py --ins file_name.txt
@@ -13,7 +13,7 @@ def open_now(hwnd, windowText):
         win32gui.SetForegroundWindow(hwnd)
 
 # Создаем объект класса argparse
-parser = argparse.ArgumentParser(description='Convert text')
+parser = argparse.ArgumentParser(description='Insert text')
 
 # Добавляем параметр --ins
 parser.add_argument('--ins', type=str, default='akciz.txt')
