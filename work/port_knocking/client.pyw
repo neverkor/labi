@@ -161,11 +161,26 @@ time.sleep(1)
 # Условие, если пинг на гугл днс прошел, то выполняем пинг с определеными пакетами и открываем рдп
 # Если пинг не прошел, то пишем ошибку и завершаем скрипт
 if inet == 0:
-    subprocess.call(["ping", "-n", "1", host_mk, "-l", len_pack[0]], stdout=False)
-    subprocess.call(["ping", "-n", "1", host_mk, "-l", len_pack[1]], stdout=False)
-    subprocess.call(["ping", "-n", "1", host_mk, "-l", len_pack[2]], stdout=False)
-    subprocess.call(["ping", "-n", "1", host_mk, "-l", len_pack[3]], stdout=False)
-    subprocess.call(["ping", "-n", "1", host_mk, "-l", len_pack[4]], stdout=False)
+    command = subprocess.call(["ping", "-n", "1", host_mk, "-l", len_pack[0]], stdout=False)
+    if command != 0:
+        mg.showerror('Ошибка', 'Микротик не доступен.')
+        sys.exit()
+    command = subprocess.call(["ping", "-n", "1", host_mk, "-l", len_pack[1]], stdout=False)
+    if command != 0:
+        mg.showerror('Ошибка', 'Микротик не доступен.')
+        sys.exit()
+    command = subprocess.call(["ping", "-n", "1", host_mk, "-l", len_pack[2]], stdout=False)
+    if command != 0:
+        mg.showerror('Ошибка', 'Микротик не доступен.')
+        sys.exit()
+    command = subprocess.call(["ping", "-n", "1", host_mk, "-l", len_pack[3]], stdout=False)
+    if command != 0:
+        mg.showerror('Ошибка', 'Микротик не доступен.')
+        sys.exit()
+    command = subprocess.call(["ping", "-n", "1", host_mk, "-l", len_pack[4]], stdout=False)
+    if command != 0:
+        mg.showerror('Ошибка', 'Микротик не доступен.')
+        sys.exit()
     sock.send(bytes('Подтверждение от машины с ID ' + address + ' время ' + now, 'UTF-8'))
 
     label_info['text'] += 'Успешно!\n'

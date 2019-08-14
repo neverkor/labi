@@ -52,7 +52,7 @@ class Server:
         self.show_all.place(x=610, y=15)
         self.update_pack.place(x=450, y=50)
         self.view_pack_1.place(x=470, y=80)
-        self.view_pack_2.place(x=455, y=110)
+        self.view_pack_2.place(x=455, y=100)
         self.area_pack_label.place(x=445, y=135)
         self.area_pack.place(x=440, y=170)
         self.aply_pack.place(x=450, y=200)
@@ -126,10 +126,17 @@ class Server:
             client.exec_command('ip firewall filter set packet-size={} numbers=2'.format(str(len_pack_mk[2])))
             client.exec_command('ip firewall filter set packet-size={} numbers=3'.format(str(len_pack_mk[3])))
             client.exec_command('ip firewall filter set packet-size={} numbers=4'.format(str(len_pack_mk[4])))
+            self.view_pack_2.config(text=self.len_pack)
+        except(TimeoutError):
+            mg.showerror('Ошибка.', 'Таймаут истек. Микротик не доступен.')
+            logging.exception('')
+            logging.error('Микротик не доступен.')
+            self.view_pack_2.config(text='{}\n(в микротике не назначено)'.format(self.len_pack))
         except(paramiko.ssh_exception.NoValidConnectionsError):
             mg.showerror('Ошибка.', 'Микротик не доступен.')
             logging.exception('')
             logging.error('Микротик не доступен.')
+            self.view_pack_2.config(text='{}\n(в микротике не назначено)'.format(self.len_pack))
 
         client.close()
 
@@ -138,6 +145,9 @@ class Server:
         self.len_pack = [randint(1, 2000) for _ in range(5)]
         len_pack_str = [str(item) for item in self.len_pack]
         len_pack_str = ' '.join(len_pack_str)
+
+        # Тут мы записываем в микротик значения из len_pack
+        self.set_mikrotik()
 
         connect = sqlite3.connect('client.db')
         cursor = connect.cursor()
@@ -154,27 +164,50 @@ class Server:
         connect.commit()
         connect.close()
 
-        # Тут мы записываем в микротик значения из len_pack
-        self.set_mikrotik()
-
-        self.view_pack_2.config(text=self.len_pack)
-
     # Метод для кнопки применить пакеты
     def update_len_pack(self):
+        connect = sqlite3.connect('client.db')
+        cursor = connect.cursor()
+
         self.len_pack = self.area_pack.get()
         if self.len_pack == '':
             mg.showerror('Ошибка.', 'Пустые пакеты, может привести к ошибке в работе!\n'
                                     'Во избежании этого пакеты примут значения по умолчанию.')
             self.len_pack = [50, 100, 150, 200, 250]
-            self.view_pack_2.config(text=self.len_pack)
+            self.set_mikrotik()
+
+            try:
+                cursor.execute("""DELETE FROM packs""")
+                cursor.execute("""INSERT INTO packs VALUES ('%s')""" % (self.len_pack))
+                logging.info('Применили свои записи пакетов')
+            except(sqlite3.OperationalError):
+                mg.showerror('Ошибка.', 'Таблица "Пакеты" не найдена.')
+                logging.exception('')
+                logging.error('Таблица "Пакеты" не найдена.')
+
+            connect.commit()
         else:
             if re.search(r'[^0-9 ]', self.len_pack):
-                mg.showerror('Ошибка.', 'Не верные пакеты')
+                mg.showerror('Ошибка.', 'Не верные пакеты, может привести к ошибке в работе!\n'
+                                    'Во избежании этого пакеты примут значения по умолчанию.')
                 self.len_pack = [50, 100, 150, 200, 250]
+                self.set_mikrotik()
+
+                try:
+                    cursor.execute("""DELETE FROM packs""")
+                    cursor.execute("""INSERT INTO packs VALUES ('%s')""" %(self.len_pack))
+                    logging.info('Применили свои записи пакетов')
+                except(sqlite3.OperationalError):
+                    mg.showerror('Ошибка.', 'Таблица "Пакеты" не найдена.')
+                    logging.exception('')
+                    logging.error('Таблица "Пакеты" не найдена.')
+
+                connect.commit()
                 self.view_pack_2.config(text=self.len_pack)
             else:
-                connect = sqlite3.connect('client.db')
-                cursor = connect.cursor()
+                # Тут мы записываем в микротик значения из len_pack
+                self.len_pack = self.len_pack.split(' ')
+                self.set_mikrotik()
 
                 try:
                     cursor.execute("""DELETE FROM packs""")
@@ -187,10 +220,6 @@ class Server:
 
                 connect.commit()
                 connect.close()
-
-                # Тут мы записываем в микротик значения из len_pack
-                self.len_pack = self.len_pack.split(' ')
-                self.set_mikrotik()
 
                 self.view_pack_2.config(text=self.len_pack)
 
