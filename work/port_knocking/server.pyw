@@ -186,6 +186,7 @@ class Server:
                 logging.error('Таблица "Пакеты" не найдена.')
 
             connect.commit()
+            connect.close()
         else:
             if re.search(r'[^0-9 ]', self.len_pack):
                 mg.showerror('Ошибка.', 'Не верные пакеты, может привести к ошибке в работе!\n'
@@ -203,6 +204,8 @@ class Server:
                     logging.error('Таблица "Пакеты" не найдена.')
 
                 connect.commit()
+                connect.close()
+
                 self.view_pack_2.config(text=self.len_pack)
             else:
                 # Тут мы записываем в микротик значения из len_pack
