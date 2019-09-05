@@ -1,4 +1,4 @@
-import sys, socket, threading, sqlite3, re, datetime, logging, hashlib, paramiko
+﻿import sys, socket, threading, sqlite3, re, datetime, logging, hashlib, paramiko
 import tkinter as tk
 from tkinter import ttk
 from random import randint
@@ -210,16 +210,18 @@ class Server:
             else:
                 # Тут мы записываем в микротик значения из len_pack
                 self.len_pack = self.len_pack.split(' ')
-                self.set_mikrotik()
+                print(self.len_pack)
+                #self.set_mikrotik()
+                self.len_pack = [int(item) for item in self.len_pack]
 
-                try:
-                    cursor.execute("""DELETE FROM packs""")
-                    cursor.execute("""INSERT INTO packs VALUES ('%s')""" %(self.len_pack))
-                    logging.info('Применили свои записи пакетов')
-                except(sqlite3.OperationalError):
-                    mg.showerror('Ошибка.', 'Таблица "Пакеты" не найдена.')
-                    logging.exception('')
-                    logging.error('Таблица "Пакеты" не найдена.')
+                # try:
+                cursor.execute("""DELETE FROM packs""")
+                cursor.execute("""INSERT INTO packs VALUES ('%s')""" %(self.len_pack))
+                # logging.info('Применили свои записи пакетов')
+                # except(sqlite3.OperationalError):
+                #     mg.showerror('Ошибка.', 'Таблица "Пакеты" не найдена.')
+                #     logging.exception('')
+                #     logging.error('Таблица "Пакеты" не найдена.')
 
                 connect.commit()
                 connect.close()
@@ -352,89 +354,92 @@ class Server:
                 conn, addr = sock.accept()
                 self.data = conn.recv(1024)
                 self.data = self.data.decode()
-
-                # Проверка ID и ключа в базе
-                connect = sqlite3.connect('client.db')
-                cursor = connect.cursor()
-
-                try:
-                    cursor.execute("""SELECT ID FROM client""")
-                except(sqlite3.OperationalError):
-                    mg.showerror('Ошибка.', 'Таблица "Клиент" не найдена.')
-                    logging.exception('')
-                    logging.error('Таблица "Клиент" не найдена.')
-
-                row = cursor.fetchall()
-
-                connect.close()
-
-                if not row:
-                    flag_key = 0
-
-                for i in row:
-                    if self.data in str(i):
-                        flag_key = 1
-                        break
-                    else:
-                        flag_key = 0
-
-                if flag_key == 0:
-                    self.hash_client = hashlib.sha512(b'self.data').hexdigest()
-                    self.count = 0
-                    self.key_client = ''
-                    while self.count < 20:
-                        self.slice_hash = randint(0, 127)
-                        self.key_client = self.key_client + self.hash_client[self.slice_hash]
-                        self.count += 1
-                    self.key_str = tk.StringVar()
-                    self.key_str.set(self.key_client)
-                    self.view_pack_4_key = tk.Entry(self.root, text=self.key_str, state='readonly', justify='center', bd=0)
-                    self.view_pack_4_key.place(x=615, y=80)
-
-                    # Отправка 'False', знак того что клиент не прошел фейсконтроль
-                    conn.send(bytes('False', 'UTF-8'))
-                    data = conn.recv(1024)
-                    data = data.decode()
-                    if not data:
-                        continue
-                    if data != self.key_client:
-                        conn.send(bytes('False', 'UTF-8'))
-                        continue
-                    else:
-                        conn.send(bytes('True', 'UTF-8'))
-                        data = conn.recv(1024)
-                        data = data.decode()
-                        values = ((data))
-
-                        connect = sqlite3.connect('client.db')
-                        cursor = connect.cursor()
-
-                        try:
-                            cursor.execute("""INSERT INTO client (ID) VALUES (?)""", (values,))
-                            logging.info('Клиент прошел аутентификацию, записали запись с ID ' + data)
-                        except(sqlite3.OperationalError):
-                            mg.showerror('Ошибка.', 'Таблица "Клиент" не найдена.')
-                            logging.exception('')
-                            logging.error('Таблица "Клиент" не найдена.')
-
-                        connect.commit()
-                        connect.close()
-
-                        self.client_info.config(text='Клиент с ID ' + data + '\nпрошел аутентификацию')
-
-                        continue
-
-                    continue
-                else:
-                # Отправка пакетов
-                    conn.send(bytes(str(self.len_pack), 'UTF-8'))
-                    data = conn.recv(1024)
-                    conn.close()
             except(OSError):
                 mg.showerror('Ошибка', 'Не удалось соединиться с клиентом.')
                 logging.exception('')
                 logging.error('Не удалось соединиться с клиентом.')
                 break
+
+            # Проверка ID и ключа в базе
+            connect = sqlite3.connect('client.db')
+            cursor = connect.cursor()
+
+            try:
+                cursor.execute("""SELECT ID FROM client""")
+            except(sqlite3.OperationalError):
+                mg.showerror('Ошибка.', 'Таблица "Клиент" не найдена.')
+                logging.exception('')
+                logging.error('Таблица "Клиент" не найдена.')
+
+            row = cursor.fetchall()
+
+            connect.close()
+
+            if not row:
+                flag_key = 0
+
+            for i in row:
+                if self.data in str(i):
+                    flag_key = 1
+                    break
+                else:
+                    flag_key = 0
+
+            if flag_key == 0:
+                self.hash_client = hashlib.sha512(b'self.data').hexdigest()
+                self.count = 0
+                self.key_client = ''
+                while self.count < 20:
+                    self.slice_hash = randint(0, 127)
+                    self.key_client = self.key_client + self.hash_client[self.slice_hash]
+                    self.count += 1
+                self.key_str = tk.StringVar()
+                self.key_str.set(self.key_client)
+                self.view_pack_4_key = tk.Entry(self.root, text=self.key_str, state='readonly', justify='center', bd=0)
+                self.view_pack_4_key.place(x=615, y=80)
+
+                # Отправка 'False', знак того что клиент не прошел фейсконтроль
+                conn.send(bytes('False', 'UTF-8'))
+                data = conn.recv(1024)
+                data = data.decode()
+                if not data:
+                    continue
+                if data != self.key_client:
+                    conn.send(bytes('False', 'UTF-8'))
+                    continue
+                else:
+                    conn.send(bytes('True', 'UTF-8'))
+                    data = conn.recv(1024)
+                    data = data.decode()
+                    values = ((data))
+
+                    connect = sqlite3.connect('client.db')
+                    cursor = connect.cursor()
+
+                    try:
+                        cursor.execute("""INSERT INTO client (ID) VALUES (?)""", (values,))
+                        logging.info('Клиент прошел аутентификацию, записали запись с ID ' + data)
+                    except(sqlite3.OperationalError):
+                        mg.showerror('Ошибка.', 'Таблица "Клиент" не найдена.')
+                        logging.exception('')
+                        logging.error('Таблица "Клиент" не найдена.')
+
+                    connect.commit()
+                    connect.close()
+
+                    self.client_info.config(text='Клиент с ID ' + data + '\nпрошел аутентификацию')
+
+                    continue
+
+                continue
+            else:
+            # Отправка пакетов
+                conn.send(bytes(str(self.len_pack), 'UTF-8'))
+                data = conn.recv(1024)
+                if data == '':
+                    break
+                conn.close()
+
             data = data.decode()
             if not data:
                 confirm = 'False'
