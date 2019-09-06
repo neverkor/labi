@@ -18,7 +18,7 @@ class Server:
 
     def gui(self):
         self.root = tk.Tk()
-        self.root.geometry('770x260')
+        self.root.geometry('800x260')
 
         # Окно по центру, в гугле нашел))
         x = (self.root.winfo_screenwidth() - self.root.winfo_reqwidth()) / 2.5
@@ -106,9 +106,9 @@ class Server:
 
     # Метод записи в микротик
     def set_mikrotik(self):
-        host_mk = '192.168.33.248'
+        host_mk = '192.168.55.1'
         user_mk = 'admin'
-        password_mk = '123456'
+        password_mk = 'Gfhfyjz_0lyf'
         port_mk = 22
         len_pack_mk = []
 
@@ -319,6 +319,7 @@ class Server:
         for selected_item in self.tree.selection():
             try:
                 cursor.execute("""DELETE FROM monitor WHERE ID = ?""", (self.tree.set(selected_item, '#1'),))
+                cursor.execute("""DELETE FROM client WHERE ID = ?""", (self.tree.set(selected_item, '#1'),))
                 connect.commit()
                 logging.info('Удалили запись с ID ' + self.tree.set(selected_item, '#1'))
                 self.tree.delete(selected_item)
@@ -541,8 +542,8 @@ if __name__ == '__main__':
     server = Server()
 
     # Начальные данные
-    host = '192.168.33.246'
-    port = 44444
+    host = '192.168.55.14'
+    port = 49444
     now = datetime.datetime.now().strftime('%H:%M %d-%m-%Y')
 
     # Настройка сокета
