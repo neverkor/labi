@@ -86,9 +86,9 @@ except(PermissionError):
 now = datetime.datetime.now().strftime('%H:%M %d-%m-%Y')
 len_pack = []
 google_dns = '8.8.8.8'
-host_mk = '192.168.33.248'
-host = '192.168.33.246'
-port = 44444
+host_mk = '192.168.0.0'
+host = '192.168.0.0'
+port = 0
 address = str(getnode())
 name_client = 'Не_установлено'
 

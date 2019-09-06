@@ -106,9 +106,9 @@ class Server:
 
     # Метод записи в микротик
     def set_mikrotik(self):
-        host_mk = '192.168.55.1'
+        host_mk = '192.168.0.0'
         user_mk = 'admin'
-        password_mk = 'Gfhfyjz_0lyf'
+        password_mk = ''
         port_mk = 22
         len_pack_mk = []
 
@@ -542,8 +542,8 @@ if __name__ == '__main__':
     server = Server()
 
     # Начальные данные
-    host = '192.168.55.14'
-    port = 49444
+    host = '192.168.0.0'
+    port = 0
     now = datetime.datetime.now().strftime('%H:%M %d-%m-%Y')
 
     # Настройка сокета
