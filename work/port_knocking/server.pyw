@@ -211,17 +211,17 @@ class Server:
                 # Тут мы записываем в микротик значения из len_pack
                 self.len_pack = self.len_pack.split(' ')
                 print(self.len_pack)
-                #self.set_mikrotik()
+                self.set_mikrotik()
                 self.len_pack = [int(item) for item in self.len_pack]
 
-                # try:
-                cursor.execute("""DELETE FROM packs""")
-                cursor.execute("""INSERT INTO packs VALUES ('%s')""" %(self.len_pack))
-                # logging.info('Применили свои записи пакетов')
-                # except(sqlite3.OperationalError):
-                #     mg.showerror('Ошибка.', 'Таблица "Пакеты" не найдена.')
-                #     logging.exception('')
-                #     logging.error('Таблица "Пакеты" не найдена.')
+                try:
+                    cursor.execute("""DELETE FROM packs""")
+                    cursor.execute("""INSERT INTO packs VALUES ('%s')""" %(self.len_pack))
+                    logging.info('Применили свои записи пакетов')
+                except(sqlite3.OperationalError):
+                    mg.showerror('Ошибка.', 'Таблица "Пакеты" не найдена.')
+                    logging.exception('')
+                    logging.error('Таблица "Пакеты" не найдена.')
 
                 connect.commit()
                 connect.close()
