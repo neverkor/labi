@@ -1,24 +1,26 @@
-﻿import sys, socket, threading, sqlite3, re, datetime, logging, hashlib, paramiko
+﻿import sys, socket, threading, sqlite3, re, datetime, logging, hashlib, paramiko, datetime
 import tkinter as tk
 from tkinter import ttk
 from random import randint
 from tkinter import messagebox as mg
 
-class Server:
+class Server_ip:
     # Инициалзируем класс, добавляем кнопки, дерево таблицы в главное окно и атрибуты
     def __init__(self):
         self.len_pack = ['50', '100', '150', '200', '250']
         self.name_client = 0
         self.info_tree = 0
         self.data = 0
+        self.data_ip_address = 0
+        self.flag_mikrotik = 0
         logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
                             datefmt='%Y-%m-%d %H:%M:%S',
                             level=logging.DEBUG,
-                            filename='server.log')
+                            filename='server_ip.log')
 
     def gui(self):
         self.root = tk.Tk()
-        self.root.geometry('800x260')
+        self.root.geometry('750x260')
 
         # Окно по центру, в гугле нашел))
         x = (self.root.winfo_screenwidth() - self.root.winfo_reqwidth()) / 2.5
@@ -26,61 +28,33 @@ class Server:
         self.root.wm_geometry("+%d+%d" % (x, y))
 
         self.root.title('Server ver. 0.1a')
-        self.tree = ttk.Treeview(self.root, column=('ID', 'Name', 'Confirm', 'Time'), show='headings')
+        self.tree = ttk.Treeview(self.root, column=('ID', 'IP', 'Name', 'Confirm', 'Time'), show='headings')
         self.tree.column('ID', width=100, anchor='center')
+        self.tree.column('IP', width=100, anchor='center')
         self.tree.column('Name', width=120, anchor='center')
         self.tree.column('Confirm', width=90, anchor='center')
         self.tree.column('Time', width=100, anchor='center')
         self.tree.heading('ID', text='ID')
+        self.tree.heading('IP', text='IP-адрес')
         self.tree.heading('Name', text='Имя')
         self.tree.heading('Confirm', text='Подтверждение')
         self.tree.heading('Time', text='Время получения')
-        self.update_pack = tk.Button(self.root, text='Обновить пакеты', command=self.random_pack, width=20)
-        self.view_pack_1 = tk.Label(self.root, text='Текущие пакеты:')
-        self.view_pack_2 = tk.Label(self.root, text=self.len_pack)
-        self.area_pack_label = tk.Label(self.root, text='Новые пакеты\n (пример: 10 20 30 40 50)')
-        self.area_pack = tk.Entry(self.root, bd='2', width='23')
-        self.aply_pack = tk.Button(self.root, text='Применить пакеты', command=self.update_len_pack, width=20)
-        self.delete = tk.Button(self.root, text='Удалить клиента', command=self.delete_client, width=20)
-        self.show_all = tk.Button(self.root, text='Показать всех клиентов',command=self.show_all_client, width=22)
-        self.view_pack_3_key = tk.Label(self.root, text='Сгенерированный ключ:')
+        self.delete = tk.Button(self.root, text='Удалить клиента', command=self.delete_client, width=25)
+        self.show_all = tk.Button(self.root, text='Показать всех клиентов',command=self.show_all_client, width=25)
+        self.view_key_label = tk.Label(self.root, text='Сгенерированный ключ:', width=25)
         self.generate_key = tk.Button(self.root, text='Сгенерировать новый ключ',
                                       command=self.generate_key_client, width=25)
         self.client_info = tk.Label(self.root, text='')
         self.tree.place(x=10, y=10)
-        self.delete.place(x=450, y=15)
-        self.show_all.place(x=610, y=15)
-        self.update_pack.place(x=450, y=50)
-        self.view_pack_1.place(x=470, y=80)
-        self.view_pack_2.place(x=455, y=100)
-        self.area_pack_label.place(x=445, y=135)
-        self.area_pack.place(x=440, y=170)
-        self.aply_pack.place(x=450, y=200)
-        self.view_pack_3_key.place(x=615, y=50)
-        self.generate_key.place(x=605, y=110)
-        self.client_info.place(x=605, y=160)
+        self.show_all.place(x=555, y=15)
+        self.delete.place(x=555, y=45)
+        self.view_key_label.place(x=555, y=75)
+        self.generate_key.place(x=555, y=130)
+        self.client_info.place(x=555, y=180)
+        self.tree.bind("<Double-1>", self.add_name_client_gui)
+
         self.create_db()
 
-        connect = sqlite3.connect('client.db')
-        cursor = connect.cursor()
-
-        try:
-            cursor.execute("""SELECT * FROM packs""")
-        except(sqlite3.OperationalError):
-            mg.showerror('Ошибка.', 'Таблица "Пакеты" не найдена.')
-            logging.exception('')
-            logging.error('Таблица "Пакеты" не найдена.')
-
-        self.len_pack = cursor.fetchall()
-        if not self.len_pack:
-            self.len_pack = [50, 100, 150, 200, 250]
-            self.view_pack_2.config(text=self.len_pack)
-        else:
-            self.view_pack_2.config(text=' '.join(self.len_pack[0]))
-
-        connect.close()
-
-        self.tree.bind("<Double-1>", self.add_name_client_gui)
         self.root.mainloop()
 
     def create_db(self):
@@ -90,9 +64,8 @@ class Server:
 
         # Выполняем команду SQL для создания таблицы
         try:
-            cursor.executescript("""CREATE TABLE monitor(ID TEXT, Name TEXT, Confirm TEXT, Time TEXT);
-                                 CREATE TABLE packs(Packs INTEGER);
-                                 CREATE TABLE client(ID INTEGER);""");
+            cursor.executescript("""CREATE TABLE monitor(ID TEXT, IP TEXT, Name TEXT, Confirm TEXT, Time TEXT);
+                                 CREATE TABLE client(ID TEXT);""");
 
             # Подтверждаем изменения
             connect.commit()
@@ -104,129 +77,44 @@ class Server:
         # Закрываем соединения с базой
         connect.close()
 
-    # Метод записи в микротик
-    def set_mikrotik(self):
-        host_mk = '192.168.0.0'
-        user_mk = 'admin'
+    # Запись айпи в микротик
+    def set_mikrotik_ip(self):
+        host_mk = ''
+        user_mk = ''
         password_mk = ''
-        port_mk = 22
+        port_mk = ''
         len_pack_mk = []
-
-        for i in self.len_pack:
-            i = int(i)
-            i += 28
-            len_pack_mk.append(i)
 
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        try:
-            client.connect(hostname=host_mk, username=user_mk, password=password_mk, port=port_mk)
-            client.exec_command('ip firewall filter set packet-size={} numbers=0'.format(str(len_pack_mk[0])))
-            client.exec_command('ip firewall filter set packet-size={} numbers=1'.format(str(len_pack_mk[1])))
-            client.exec_command('ip firewall filter set packet-size={} numbers=2'.format(str(len_pack_mk[2])))
-            client.exec_command('ip firewall filter set packet-size={} numbers=3'.format(str(len_pack_mk[3])))
-            client.exec_command('ip firewall filter set packet-size={} numbers=4'.format(str(len_pack_mk[4])))
-            self.view_pack_2.config(text=self.len_pack)
-        except(TimeoutError):
-            mg.showerror('Ошибка.', 'Таймаут истек. Микротик не доступен.')
-            logging.exception('')
-            logging.error('Микротик не доступен.')
-            self.view_pack_2.config(text='{}\n(в микротике не назначено)'.format(self.len_pack))
-        except(paramiko.ssh_exception.NoValidConnectionsError):
-            mg.showerror('Ошибка.', 'Микротик не доступен.')
-            logging.exception('')
-            logging.error('Микротик не доступен.')
-            self.view_pack_2.config(text='{}\n(в микротике не назначено)'.format(self.len_pack))
+
+        if self.flag_mikrotik == 0:
+            try:
+                client.connect(hostname=host_mk, username=user_mk, password=password_mk, port=port_mk)
+                client.exec_command('ip firewall address-list add address="{}" list="Access_Allow_Test" timeout="12:00:00"'.format(str(self.data_ip_address)))
+            except(TimeoutError):
+                mg.showerror('Ошибка.', 'Таймаут истек. Микротик не доступен.')
+                logging.exception('')
+                logging.error('Микротик не доступен.')
+            except(paramiko.ssh_exception.NoValidConnectionsError):
+                mg.showerror('Ошибка.', 'Микротик не доступен.')
+                logging.exception('')
+                logging.error('Микротик не доступен.')
+        else:
+            try:
+                client.connect(hostname=host_mk, username=user_mk, password=password_mk, port=port_mk)
+                client.exec_command('ip firewall address-list remove [find where list="Access_Allow_Test" && address="{}"]'.format(str(self.ip_client)))
+                client.exec_command('ip firewall address-list add address="{}" list="Access_Allow_Test" timeout="12:00:00"'.format(str(self.data_ip_address)))
+            except(TimeoutError):
+                mg.showerror('Ошибка.', 'Таймаут истек. Микротик не доступен.')
+                logging.exception('')
+                logging.error('Микротик не доступен.')
+            except(paramiko.ssh_exception.NoValidConnectionsError):
+                mg.showerror('Ошибка.', 'Микротик не доступен.')
+                logging.exception('')
+                logging.error('Микротик не доступен.')
 
         client.close()
-
-    # Метод для обновления пакетов
-    def random_pack(self):
-        self.len_pack = [randint(1, 2000) for _ in range(5)]
-        len_pack_str = [str(item) for item in self.len_pack]
-        len_pack_str = ' '.join(len_pack_str)
-
-        # Тут мы записываем в микротик значения из len_pack
-        self.set_mikrotik()
-
-        connect = sqlite3.connect('client.db')
-        cursor = connect.cursor()
-
-        try:
-            cursor.execute("""DELETE FROM packs""")
-            cursor.execute("""INSERT INTO packs VALUES ('%s')"""%(len_pack_str))
-            logging.info('Обновили записи пакетов')
-        except(sqlite3.OperationalError):
-            mg.showerror('Ошибка.', 'Таблица "Пакеты" не найдена.')
-            logging.exception('')
-            logging.error('Таблица "Пакеты" не найдена.')
-
-        connect.commit()
-        connect.close()
-
-    # Метод для кнопки применить пакеты
-    def update_len_pack(self):
-        connect = sqlite3.connect('client.db')
-        cursor = connect.cursor()
-
-        self.len_pack = self.area_pack.get()
-        if self.len_pack == '':
-            mg.showerror('Ошибка.', 'Пустые пакеты, может привести к ошибке в работе!\n'
-                                    'Во избежании этого пакеты примут значения по умолчанию.')
-            self.len_pack = [50, 100, 150, 200, 250]
-            self.set_mikrotik()
-
-            try:
-                cursor.execute("""DELETE FROM packs""")
-                cursor.execute("""INSERT INTO packs VALUES ('%s')""" % (self.len_pack))
-                logging.info('Применили свои записи пакетов')
-            except(sqlite3.OperationalError):
-                mg.showerror('Ошибка.', 'Таблица "Пакеты" не найдена.')
-                logging.exception('')
-                logging.error('Таблица "Пакеты" не найдена.')
-
-            connect.commit()
-            connect.close()
-        else:
-            if re.search(r'[^0-9 ]', self.len_pack):
-                mg.showerror('Ошибка.', 'Не верные пакеты, может привести к ошибке в работе!\n'
-                                    'Во избежании этого пакеты примут значения по умолчанию.')
-                self.len_pack = [50, 100, 150, 200, 250]
-                self.set_mikrotik()
-
-                try:
-                    cursor.execute("""DELETE FROM packs""")
-                    cursor.execute("""INSERT INTO packs VALUES ('%s')""" %(self.len_pack))
-                    logging.info('Применили свои записи пакетов')
-                except(sqlite3.OperationalError):
-                    mg.showerror('Ошибка.', 'Таблица "Пакеты" не найдена.')
-                    logging.exception('')
-                    logging.error('Таблица "Пакеты" не найдена.')
-
-                connect.commit()
-                connect.close()
-
-                self.view_pack_2.config(text=self.len_pack)
-            else:
-                # Тут мы записываем в микротик значения из len_pack
-                self.len_pack = self.len_pack.split(' ')
-                print(self.len_pack)
-                self.set_mikrotik()
-                self.len_pack = [int(item) for item in self.len_pack]
-
-                try:
-                    cursor.execute("""DELETE FROM packs""")
-                    cursor.execute("""INSERT INTO packs VALUES ('%s')""" %(self.len_pack))
-                    logging.info('Применили свои записи пакетов')
-                except(sqlite3.OperationalError):
-                    mg.showerror('Ошибка.', 'Таблица "Пакеты" не найдена.')
-                    logging.exception('')
-                    logging.error('Таблица "Пакеты" не найдена.')
-
-                connect.commit()
-                connect.close()
-
-                self.view_pack_2.config(text=self.len_pack)
 
     # Метод дочернего окна для изменения имени
     def add_name_client_gui(self, event):
@@ -295,7 +183,7 @@ class Server:
         cursor = connect.cursor()
 
         try:
-            cursor.execute("""SELECT * FROM monitor""")
+            cursor.execute("""SELECT * FROM monitor WHERE ID!=1""")
             row = cursor.fetchall()
         except(sqlite3.OperationalError):
             mg.showerror('Ошибка.', 'Таблица "Монитор" не найдена.')
@@ -344,7 +232,7 @@ class Server:
             self.key_str = tk.StringVar()
             self.key_str.set(self.key_client)
             self.view_pack_4_key = tk.Entry(self.root, text=self.key_str, state='readonly', justify='center', bd=0)
-            self.view_pack_4_key.place(x=615, y=80)
+            self.view_pack_4_key.place(x=570, y=100)
 
     # Метод обработки и отправки пакетов
     def send_info(self):
@@ -352,14 +240,17 @@ class Server:
         flag_key = 0
         while True:
             try:
+                sock.settimeout(5.0)
                 conn, addr = sock.accept()
                 self.data = conn.recv(1024)
                 self.data = self.data.decode()
+            except(socket.timeout):
+                continue
             except(OSError):
                 mg.showerror('Ошибка', 'Не удалось соединиться с клиентом.')
                 logging.exception('')
                 logging.error('Не удалось соединиться с клиентом.')
-                break
+                continue
 
             # Проверка ID и ключа в базе
             connect = sqlite3.connect('client.db')
@@ -382,6 +273,7 @@ class Server:
             for i in row:
                 if self.data in str(i):
                     flag_key = 1
+                    self.id_client = self.data
                     break
                 else:
                     flag_key = 0
@@ -397,7 +289,7 @@ class Server:
                 self.key_str = tk.StringVar()
                 self.key_str.set(self.key_client)
                 self.view_pack_4_key = tk.Entry(self.root, text=self.key_str, state='readonly', justify='center', bd=0)
-                self.view_pack_4_key.place(x=615, y=80)
+                self.view_pack_4_key.place(x=570, y=100)
 
                 # Отправка 'False', знак того что клиент не прошел фейсконтроль
                 conn.send(bytes('False', 'UTF-8'))
@@ -450,7 +342,41 @@ class Server:
                 confirm = 'True'
 
                 data_id = data.split()[5]
-                data_time = data.split()[7] + ' ' + data.split()[8]
+                data_time = datetime.datetime.now().strftime('%H:%M %d-%m-%Y')
+                self.data_ip_address = data.split()[9]
+
+                # Сравнение айпи клиента из базы
+                connect = sqlite3.connect('client.db')
+                cursor = connect.cursor()
+
+                try:
+                    cursor.execute("""SELECT IP FROM monitor WHERE ID = ?""", (self.id_client,))
+                except(sqlite3.OperationalError):
+                    mg.showerror('Ошибка.', 'Таблица "Монитор" не найдена.')
+                    logging.exception('')
+                    logging.error('Таблица "Монитор" не найдена.')
+
+                self.ip_client = cursor.fetchone()
+
+                if self.ip_client == None:
+                    self.flag_mikrotik = 0
+                    cursor.execute("""INSERT INTO monitor (IP) VALUES (?)""", (self.data_ip_address,))
+                    logging.info('Клиент ' + self.id_client + ' сменил айпи адрес, записали запись с IP ' + self.data_ip_address)
+                else:
+                    for i in self.ip_client:
+                        self.ip_client = i
+
+                    values_update_ip = ((self.data_ip_address, self.id_client))
+
+                    if self.ip_client != self.data_ip_address:
+                        self.flag_mikrotik = 1
+                        cursor.execute("""UPDATE monitor SET IP = ? WHERE ID = ?""", values_update_ip)
+                        logging.info('Клиент ' + self.id_client + ' сменил айпи адрес, записали запись с IP ' + self.data_ip_address)
+
+                connect.commit()
+                connect.close()
+
+                self.client_info.config(text='Клиент с ID ' + data_id + '\nотправил подтверждение')
 
                 # Установление имени из базы
                 connect = sqlite3.connect('client.db')
@@ -466,12 +392,12 @@ class Server:
                 self.name_client = cursor.fetchall()
                 if self.name_client == []:
                     self.name_client = 'Не_установлено'
-                else:
-                    pass
 
                 connect.close()
 
-            values = ((data_id, self.name_client, confirm, data_time))
+            values = ((data_id, self.data_ip_address, self.name_client, confirm, data_time))
+
+            #self.set_mikrotik_ip()
 
             # Добавление нового клиента или обновление информации о старом клиенте
             connect = sqlite3.connect('client.db')
@@ -504,7 +430,7 @@ class Server:
                 connect.commit()
             else:
                 try:
-                    cursor.execute("""INSERT INTO monitor (ID, Name, Confirm, Time) VALUES (?, ?, ?, ?)""", values)
+                    cursor.execute("""INSERT INTO monitor (ID, IP, Name, Confirm, Time) VALUES (?, ?, ?, ?, ?)""", values)
                     logging.info('Подключился клиент, записали запись с ID ' + data_id)
                 except(sqlite3.OperationalError):
                     mg.showerror('Ошибка.', 'Таблица "Монитор" не найдена.')
@@ -539,11 +465,11 @@ class Server:
 # Тело
 if __name__ == '__main__':
 
-    server = Server()
+    server = Server_ip()
 
     # Начальные данные
-    host = '192.168.0.0'
-    port = 0
+    host = ''
+    port = ''
     now = datetime.datetime.now().strftime('%H:%M %d-%m-%Y')
 
     # Настройка сокета
