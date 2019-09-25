@@ -198,7 +198,7 @@ class Server_ip:
 
         connect.close()
 
-    # Метод удаления записи в постащиках
+    # Метод удаления записи
     def delete_client(self):
 
         connect = sqlite3.connect('client.db')
