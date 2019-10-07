@@ -147,7 +147,7 @@ class Server_ip:
             self.add_name_client_gui.destroy()
         else:
             self.info_tree = list(self.info_tree)
-            self.info_tree[1] = self.name_client
+            self.info_tree[2] = self.name_client
             self.tree.item(self.item, values=self.info_tree)
             self.add_name_client_gui.destroy()
 
@@ -198,7 +198,7 @@ class Server_ip:
 
         connect.close()
 
-    # Метод удаления записи
+    # Метод удаления записи в постащиках
     def delete_client(self):
 
         connect = sqlite3.connect('client.db')
@@ -239,8 +239,20 @@ class Server_ip:
         flag = 0
         flag_key = 0
         while True:
+            # Настройка сокета
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
-                sock.settimeout(5.0)
+                sock.bind((host, port))
+                sock.listen(5)
+                logging.info('Запуск ' + now)
+                logging.info('Заняли IP-адрес ' + str(host) + ', слушаем порт ' + str(port))
+            except(OSError):
+                mg.showerror('Ошибка', 'Требуемый адрес хоста неверен.')
+                logging.exception('')
+                logging.error('Требуемый адрес хоста неверен.')
+                sys.exit()
+            try:
+                sock.settimeout(5)
                 conn, addr = sock.accept()
                 self.data = conn.recv(1024)
                 self.data = self.data.decode()
@@ -250,6 +262,8 @@ class Server_ip:
                 mg.showerror('Ошибка', 'Не удалось соединиться с клиентом.')
                 logging.exception('')
                 logging.error('Не удалось соединиться с клиентом.')
+                conn.close()
+                sock.close()
                 continue
 
             # Проверка ID и ключа в базе
@@ -296,13 +310,19 @@ class Server_ip:
                 data = conn.recv(1024)
                 data = data.decode()
                 if not data:
+                    conn.close()
+                    sock.close()
                     continue
                 if data != self.key_client:
                     conn.send(bytes('False', 'UTF-8'))
+                    conn.close()
+                    sock.close()
                     continue
                 else:
                     conn.send(bytes('True', 'UTF-8'))
                     data = conn.recv(1024)
+                    conn.close()
+                    sock.close()
                     data = data.decode()
                     values = ((data))
 
@@ -330,8 +350,11 @@ class Server_ip:
                 conn.send(bytes(str(self.len_pack), 'UTF-8'))
                 data = conn.recv(1024)
                 if data == '':
+                    conn.close()
+                    sock.close()
                     break
                 conn.close()
+                sock.close()
 
             data = data.decode()
             if not data:
@@ -397,7 +420,7 @@ class Server_ip:
 
             values = ((data_id, self.data_ip_address, self.name_client, confirm, data_time))
 
-            #self.set_mikrotik_ip()
+            self.set_mikrotik_ip()
 
             # Добавление нового клиента или обновление информации о старом клиенте
             connect = sqlite3.connect('client.db')
@@ -471,19 +494,6 @@ if __name__ == '__main__':
     host = ''
     port = ''
     now = datetime.datetime.now().strftime('%H:%M %d-%m-%Y')
-
-    # Настройка сокета
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        sock.bind((host, port))
-        sock.listen(5)
-        logging.info('Запуск ' + now)
-        logging.info('Заняли IP-адрес ' + str(host) + ', слушаем порт ' + str(port))
-    except(OSError):
-        mg.showerror('Ошибка', 'Требуемый адрес хоста неверен.')
-        logging.exception('')
-        logging.error('Требуемый адрес хоста неверен.')
-        sys.exit()
 
     # Создаем два потока, GUI и обработка пакетов
     send_info = threading.Thread(target=server.send_info, name='send_info', daemon=True, args=())

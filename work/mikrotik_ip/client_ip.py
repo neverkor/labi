@@ -47,7 +47,7 @@ class Client_authentication:
         authentication.wm_geometry("+%d+%d" % (x, y))
         label_authentication = tk.Label(authentication, text='Введите ключ для аутентификации:')
         self.area_authentication = tk.Entry(authentication, bd='2', width=30)
-        self.area_authentication.bind("<Control-v>", self.clipboard)
+        self.area_authentication.bind("<Control-c>", self.clipboard)
         aply_authentication = tk.Button(authentication, text="Применить ключ", command=self.authentication, width=20)
         cansel = tk.Button(authentication, text='Выход', command=self.quit_gui, width=20)
         label_authentication.place(x=55, y=10)
@@ -85,7 +85,7 @@ class Client_authentication:
 
     # Проверка hosts
     def check_host(self):
-        reference = []
+        reference = ['']
 
         with open('C:/Windows/System32/drivers/etc/hosts', 'r') as file:
             file = file.read()
